@@ -63,10 +63,15 @@ export async function POST(request: NextRequest) {
       line_items: lineItems,
       mode: "payment",
       customer_email: customerEmail,
+      billing_address_collection: "required",
+      shipping_address_collection: {
+        allowed_countries: [
+          "US", "CA", "GB", "DE", "FR", "DK", "SE", "NO", "NL", "BE", "ES", "IT", "AU", "JP",
+        ],
+      },
       success_url: successUrl ?? `${baseUrl}/cart?success=true`,
       cancel_url: cancelUrl ?? `${baseUrl}/cart?canceled=true`,
       metadata: {
-        // Store cart summary for webhook/fulfillment
         itemCount: String(items.length),
       },
     });

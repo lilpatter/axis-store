@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { signOut } from "next-auth/react";
 import type { Session } from "next-auth";
 import { Button } from "@/components/ui/Button";
@@ -13,6 +14,7 @@ interface OrderItem {
 
 interface Order {
   id: string;
+  order_number?: string | null;
   stripe_session_id: string;
   items: OrderItem[];
   total: number;
@@ -66,23 +68,36 @@ export function AccountContent({ session }: AccountContentProps) {
                 key={order.id}
                 className="border-b border-[#e5e5e7] pb-4 last:border-0 last:pb-0"
               >
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-[#6E6E73]">
-                    {new Date(order.created_at).toLocaleDateString("en-US", {
-                      dateStyle: "medium",
-                    })}
-                  </span>
-                  <span className="font-medium">
-                    ${(order.total / 100).toFixed(2)}
-                  </span>
-                </div>
-                <ul className="text-[15px] text-[#1D1D1F]">
-                  {order.items.map((item, i) => (
-                    <li key={i}>
-                      {item.name} × {item.quantity}
-                    </li>
-                  ))}
-                </ul>
+                <Link
+                  href={`/account/orders/${order.id}`}
+                  className="block hover:bg-[#ebebed] -mx-2 px-2 py-1 rounded-lg transition-colors"
+                >
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-[#6E6E73]">
+                      {order.order_number && (
+                        <span className="font-medium text-[#1D1D1F] mr-2">
+                          {order.order_number}
+                        </span>
+                      )}
+                      {new Date(order.created_at).toLocaleDateString("en-US", {
+                        dateStyle: "medium",
+                      })}
+                    </span>
+                    <span className="font-medium">
+                      ${(order.total / 100).toFixed(2)}
+                    </span>
+                  </div>
+                  <ul className="text-[15px] text-[#1D1D1F]">
+                    {order.items.map((item, i) => (
+                      <li key={i}>
+                        {item.name} × {item.quantity}
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-xs text-[#6E6E73] mt-2">
+                    View details →
+                  </p>
+                </Link>
               </li>
             ))}
           </ul>
