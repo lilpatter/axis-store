@@ -116,7 +116,7 @@ export function AccountContent({ session }: AccountContentProps) {
                     </span>
                   </div>
                   <div className="text-sm text-[#6E6E73] mb-2">
-                    {new Date(order.created_at).toLocaleDateString("en-US", {
+                    {new Date(order.created_at).toLocaleString("en-US", {
                       dateStyle: "medium",
                       timeStyle: "short",
                     })}
