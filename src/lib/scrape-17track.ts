@@ -76,77 +76,43 @@ export async function scrape17Track(
     );
 
     const url = `https://t.17track.net/en#nums=${encodeURIComponent(trackingNumber.trim())}`;
-    await page.goto(url, { waitUntil: "load", timeout: 25000 });
+    // Use domcontentloaded for speed; 17track is SPA, content loads async
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45000 });
 
-    // Wait for tracking content to appear; if timeout, we'll still try to extract
+    // Wait for tracking block (status only; timeline deferred)
     await page
-      .waitForSelector("#yq-tracking-progress, h3, .yq-time", {
-        timeout: 20000,
+      .waitForSelector("#yq-tracking-progress h3, #yq-tracking-progress", {
+        timeout: 35000,
       })
-      .catch(() => {
-        /* continue - page may still have content */
-      });
+      .catch(() => {});
 
-    // Give dynamic content a moment to render
-    await new Promise((r) => setTimeout(r, 3000));
+    // Brief wait for status text to render
+    await new Promise((r) => setTimeout(r, 2000));
 
     const extracted = await page.evaluate(() => {
       const result: {
         status: string;
         deliveryTime: string | null;
-        events: Array<{ time?: string; description?: string; location?: string }>;
-      } = { status: "", deliveryTime: null, events: [] };
+      } = { status: "", deliveryTime: null };
 
-      // Status: use #yq-tracking-progress h3 (the actual tracking status, not nav/header)
       const trackingBlock = document.getElementById("yq-tracking-progress");
       const statusH3 = trackingBlock?.querySelector("h3");
       if (statusH3?.textContent?.trim()) {
         result.status = statusH3.textContent.trim();
       }
+      if (!result.status && trackingBlock) {
+        const h3 = trackingBlock.querySelector("h3");
+        if (h3?.textContent?.trim()) result.status = h3.textContent.trim();
+      }
       if (!result.status) {
         const h3 = document.querySelector("h3");
         if (h3?.textContent?.trim()) result.status = h3.textContent.trim();
       }
-      if (!result.status) {
-        const statusEl = document.querySelector("[class*='status']");
-        if (statusEl?.textContent?.trim()) result.status = statusEl.textContent.trim();
-      }
 
-      // Delivery time: "Time of delivery: YYYY-MM-DD" in the tracking block
       const blockText = trackingBlock?.innerText ?? document.body.innerText;
       const deliveryMatch = blockText.match(/time of delivery:?\s*([^\n]+)/i);
       if (deliveryMatch?.[1]) {
         result.deliveryTime = deliveryMatch[1].trim();
-      }
-
-      // Timeline: .yq-time with sibling description (from all carrier sections)
-      const timeSpans = document.querySelectorAll(".yq-time");
-      timeSpans.forEach((span) => {
-        const time = span.textContent?.trim();
-        const parent = span.closest(".flex, [class*='flex']");
-        const descEl = parent?.querySelector("span:not(.yq-time)");
-        const desc = descEl?.textContent?.trim();
-        if (time || desc) {
-          result.events.push({ time, description: desc });
-        }
-      });
-
-      // Fallback: any list of events
-      if (result.events.length === 0) {
-        const rows = document.querySelectorAll("[class*='space-y'] .flex, [class*='timeline'] > div");
-        rows.forEach((row) => {
-          const timeEl = row.querySelector(".yq-time, [class*='time']");
-          const text = Array.from(row.querySelectorAll("span"))
-            .map((s) => s.textContent?.trim())
-            .filter(Boolean)
-            .join(" ");
-          if (text) {
-            result.events.push({
-              time: timeEl?.textContent?.trim(),
-              description: text,
-            });
-          }
-        });
       }
 
       return result;
@@ -156,23 +122,14 @@ export async function scrape17Track(
     browser = null;
 
     const mappedStatus = mapStatus(extracted.status);
-    const events = extracted.events.slice(0, 20);
-    const lastEvent =
-      events.length > 0
-        ? {
-            time: events[0].time,
-            description: events[0].description,
-            location: events[0].location,
-          }
-        : null;
 
     return {
       status: mappedStatus,
       rawStatus: extracted.status || "Unknown",
       deliveryTime: extracted.deliveryTime,
       carrier: null,
-      lastEvent,
-      events,
+      lastEvent: null,
+      events: [], // Timeline skipped for now; can add later
     };
   } finally {
     if (browser) {
