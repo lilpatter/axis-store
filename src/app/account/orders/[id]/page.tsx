@@ -150,9 +150,12 @@ export default async function OrderDetailPage({
             <div className="flex justify-between">
               <dt className="text-[#6E6E73]">Date</dt>
               <dd>
-                {new Date(order.created_at).toLocaleDateString("en-US", {
-                  dateStyle: "medium",
-                  timeStyle: "short",
+                {new Date(order.created_at).toLocaleString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
                 })}
               </dd>
             </div>
