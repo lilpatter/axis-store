@@ -39,7 +39,15 @@ export async function scrape17Track(
     if (process.env.PUPPETEER_EXECUTABLE_PATH) {
       executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
     } else if (isVercel) {
-      executablePath = await chromium.executablePath();
+      // On Vercel, pass explicit bin path (pnpm nests packages; tracer may put it at cwd)
+      const { join } = await import("path");
+      const cwd = process.cwd();
+      const binPaths = [
+        join(cwd, "node_modules", "@sparticuz", "chromium", "bin"),
+        join(cwd, "node_modules", ".pnpm", "@sparticuz+chromium@143.0.4", "node_modules", "@sparticuz", "chromium", "bin"),
+      ];
+      const binPath = binPaths.find((p) => existsSync(p));
+      executablePath = await chromium.executablePath(binPath || undefined);
     } else if (process.platform === "win32") {
       const paths = [
         join(process.env["ProgramFiles"] || "C:\\Program Files", "Google", "Chrome", "Application", "chrome.exe"),
