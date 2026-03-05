@@ -22,6 +22,7 @@ export function CheckoutButton() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items,
+          locale: navigator.language || "en-US",
           successUrl: `${window.location.origin}/cart?success=true`,
           cancelUrl: `${window.location.origin}/cart?canceled=true`,
         }),

@@ -3,6 +3,7 @@ import { getToken } from "next-auth/jwt";
 import Stripe from "stripe";
 import type { CartItem } from "@/types";
 import { getProducts } from "@/lib/shopify";
+import { getCurrencyForLocale, toStripeUnitAmount } from "@/lib/currency";
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -45,8 +46,9 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { items, successUrl, cancelUrl } = (await request.json()) as {
+    const { items, locale, successUrl, cancelUrl } = (await request.json()) as {
       items: CartItem[];
+      locale?: string;
       successUrl?: string;
       cancelUrl?: string;
     };
@@ -83,10 +85,13 @@ export async function POST(request: NextRequest) {
     const baseUrl =
       process.env.NEXT_PUBLIC_SITE_URL ?? "https://axisstore.vercel.app";
 
+    const currency = getCurrencyForLocale(locale ?? "en-US");
+    const stripeCurrency = currency.toLowerCase();
+
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] =
       items.map((item) => ({
         price_data: {
-          currency: "usd",
+          currency: stripeCurrency,
           product_data: {
             name: item.name,
             images: [item.image],
@@ -95,7 +100,7 @@ export async function POST(request: NextRequest) {
               variant: item.variant ?? "",
             },
           },
-          unit_amount: Math.round(item.price * 100),
+          unit_amount: toStripeUnitAmount(item.price, currency),
         },
         quantity: item.quantity,
       }));

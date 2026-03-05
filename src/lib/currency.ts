@@ -65,6 +65,18 @@ export function convertFromUsd(usdAmount: number, currency: CurrencyCode): numbe
   return Math.round(usdAmount * rate * 100) / 100;
 }
 
+/** Zero-decimal currencies: amount is in whole units (e.g. JPY). */
+const ZERO_DECIMAL_CURRENCIES: CurrencyCode[] = ["JPY"];
+
+/** Convert price to Stripe unit_amount (smallest unit). USD $9.99 → 999. */
+export function toStripeUnitAmount(usdPrice: number, currency: CurrencyCode): number {
+  const amount = convertFromUsd(usdPrice, currency);
+  if (ZERO_DECIMAL_CURRENCIES.includes(currency)) {
+    return Math.round(amount);
+  }
+  return Math.round(amount * 100);
+}
+
 /**
  * Format a price for display. Store prices are in USD.
  * @param priceUsd - Price in USD (full amount, e.g. 98.00)
