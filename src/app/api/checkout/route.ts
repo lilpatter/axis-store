@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 import Stripe from "stripe";
 import type { CartItem } from "@/types";
 
@@ -23,6 +24,12 @@ export async function POST(request: NextRequest) {
       successUrl?: string;
       cancelUrl?: string;
     };
+
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+    const customerEmail = token?.email ?? undefined;
 
     if (!items?.length) {
       return NextResponse.json(
@@ -55,6 +62,7 @@ export async function POST(request: NextRequest) {
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
+      customer_email: customerEmail,
       success_url: successUrl ?? `${baseUrl}/cart?success=true`,
       cancel_url: cancelUrl ?? `${baseUrl}/cart?canceled=true`,
       metadata: {

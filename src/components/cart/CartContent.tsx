@@ -25,9 +25,19 @@ export function CartContent() {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         {success && (
-          <p className="text-green-600 font-medium mb-4">
-            Payment successful! Thank you for your order.
-          </p>
+          <div className="mb-4 space-y-2">
+            <p className="text-green-600 font-medium">
+              Payment successful! Thank you for your order.
+            </p>
+            <p className="text-sm text-[#6E6E73]">
+              <Link
+                href="/account"
+                className="underline hover:text-[#1D1D1F]"
+              >
+                View your orders
+              </Link>
+            </p>
+          </div>
         )}
         {canceled && (
           <p className="text-[#6E6E73] mb-4">

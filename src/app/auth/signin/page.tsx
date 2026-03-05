@@ -36,8 +36,11 @@ function SignInForm() {
           className="text-2xl font-semibold text-center text-[#1D1D1F]"
           style={{ fontFamily: "var(--font-display), 'DM Sans', sans-serif" }}
         >
-          Sign in
+          Sign in or create account
         </h1>
+        <p className="text-sm text-center text-[#6E6E73] -mt-2">
+          Use Google or GitHub — no password needed. First time creates an account.
+        </p>
         <div className="space-y-3">
           <Button
             variant="primary"
