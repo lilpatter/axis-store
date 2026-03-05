@@ -39,6 +39,7 @@ interface Order {
   total: number;
   details?: OrderDetails | null;
   tracking_number?: string | null;
+  order_status?: string | null;
   created_at: string;
 }
 
@@ -147,6 +148,12 @@ export default async function OrderDetailPage({
               <div className="flex justify-between">
                 <dt className="text-[#6E6E73]">Order number</dt>
                 <dd className="font-medium">{order.order_number}</dd>
+              </div>
+            )}
+            {(order.order_status ?? "paid") !== "paid" && (
+              <div className="flex justify-between">
+                <dt className="text-[#6E6E73]">Status</dt>
+                <dd className="font-medium capitalize">{order.order_status}</dd>
               </div>
             )}
             <div className="flex justify-between">
