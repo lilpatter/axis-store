@@ -76,62 +76,71 @@ export async function scrape17Track(
     );
 
     const url = `https://t.17track.net/en#nums=${encodeURIComponent(trackingNumber.trim())}`;
+    const context = browser.defaultBrowserContext();
+    await context.overridePermissions("https://t.17track.net", ["clipboard-read", "clipboard-write"]);
+
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45000 });
 
-    // Wait until the real tracking result loads (not "please wait")
-    // The status row: <div class="flex items-center gap-1 text-xl font-semibold"><h3>Delivered</h3>...Time of delivery:...</div>
-    await page
-      .waitForFunction(
-        () => {
-          const block = document.getElementById("yq-tracking-progress");
-          if (!block) return false;
-          const text = block.innerText;
-          return text.includes("Time of delivery") || /\b(Delivered|In transit|Out for delivery|Expired|Exception|Pick up|Failed)\b/i.test(text);
-        },
-        { timeout: 40000 }
-      )
-      .catch(() => {});
+    // Wait for "Copy details" button (indicates tracking has loaded)
+    const copyBtn = await page
+      .waitForSelector('button[title="Copy detailed tracking results."]', {
+        timeout: 40000,
+      })
+      .catch(() => null);
 
-    await new Promise((r) => setTimeout(r, 3000));
+    if (!copyBtn) {
+      throw new Error("Tracking did not load in time");
+    }
 
-    const extracted = await page.evaluate(() => {
-      const result: {
-        status: string;
-        deliveryTime: string | null;
-      } = { status: "", deliveryTime: null };
+    await new Promise((r) => setTimeout(r, 1500));
 
-      const trackingBlock = document.getElementById("yq-tracking-progress");
-      // Status row: <div class="flex..."><h3>Delivered</h3>...Time of delivery:...</div>
-      const allDivs = trackingBlock?.querySelectorAll("div") ?? [];
-      for (const div of Array.from(allDivs)) {
-        if (div.innerText.includes("Time of delivery") && div.querySelector("h3")) {
-          const h3 = div.querySelector("h3");
-          if (h3?.textContent?.trim()) {
-            result.status = h3.textContent.trim();
-            break;
-          }
-        }
+    // Click "Copy details" to get formatted text in clipboard
+    await copyBtn.click();
+    await new Promise((r) => setTimeout(r, 800));
+
+    let copyText = await page.evaluate(async () => {
+      try {
+        return await navigator.clipboard.readText();
+      } catch {
+        return "";
       }
-      if (!result.status) {
-        const h3 = trackingBlock?.querySelector("h3");
-        if (h3?.textContent?.trim()) result.status = h3.textContent.trim();
-      }
-      if (!result.status) {
-        const h3 = document.querySelector("h3");
-        if (h3?.textContent?.trim()) result.status = h3.textContent.trim();
-      }
-
-      const blockText = trackingBlock?.innerText ?? document.body.innerText;
-      const deliveryMatch = blockText.match(/time of delivery:?\s*([^\n]+)/i);
-      if (deliveryMatch?.[1]) {
-        result.deliveryTime = deliveryMatch[1].trim();
-      }
-
-      return result;
     });
+
+    // Fallback: if clipboard empty, try DOM (clipboard may be blocked)
+    if (!copyText?.includes("Package status")) {
+      copyText = await page.evaluate(() => {
+        const block = document.getElementById("yq-tracking-progress");
+        return block?.innerText ?? document.body.innerText ?? "";
+      });
+    }
 
     await browser.close();
     browser = null;
+
+    // Parse "Package status:  Delivered (22 Days)" from Copy details format
+    let rawStatus = "";
+    const statusMatch = copyText.match(/Package status:\s*([^\n]+)/i);
+    if (statusMatch) {
+      rawStatus = statusMatch[1].trim();
+    } else {
+      // Fallback from DOM: look for "Time of delivery" nearby status, or known status words
+      const delivered = /\bDelivered\b/i.test(copyText);
+      const inTransit = /\bIn transit\b/i.test(copyText);
+      if (delivered) rawStatus = "Delivered";
+      else if (inTransit) rawStatus = "In transit";
+      else rawStatus = copyText.match(/Time of delivery:\s*([^\n]+)/i)?.[1]?.trim() ?? "";
+    }
+    const statusWord = rawStatus.replace(/\s*\([^)]*\)\s*$/, "").trim();
+
+    // Delivery date: prefer line containing "delivered", else first event date
+    const deliveredLineMatch = copyText.match(/(\d{4}-\d{2}-\d{2})\s+\d{2}:\d{2}[^\n]*\bdelivered\b/i);
+    const dateMatch = deliveredLineMatch ?? copyText.match(/(\d{4}-\d{2}-\d{2})\s+\d{2}:\d{2}/);
+    const deliveryTime = dateMatch?.[1] ?? (copyText.match(/Time of delivery:\s*(\d{4}-\d{2}-\d{2})/i)?.[1] ?? null);
+
+    const extracted = {
+      status: statusWord || rawStatus,
+      deliveryTime,
+    };
 
     const mappedStatus = mapStatus(extracted.status);
 
