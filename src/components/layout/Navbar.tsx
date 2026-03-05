@@ -57,14 +57,14 @@ export function Navbar() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSearchOpen(true)}
-                className="p-2 -m-2 text-[#1D1D1F] hover:text-[#6E6E73] transition-colors"
+                className="p-2 -m-2 rounded-lg text-[#1D1D1F] hover:text-[#6E6E73] hover:bg-[#F5F5F7] transition-colors"
                 aria-label="Search"
               >
                 <Search className="w-5 h-5" />
               </button>
               <Link
                 href="/cart"
-                className="relative p-2 -m-2 text-[#1D1D1F] hover:text-[#6E6E73] transition-colors"
+                className="relative p-2 -m-2 rounded-lg text-[#1D1D1F] hover:text-[#6E6E73] hover:bg-[#F5F5F7] transition-colors"
                 aria-label="Cart"
               >
                 <ShoppingBag className="w-5 h-5" />
@@ -76,7 +76,7 @@ export function Navbar() {
               </Link>
               <Link
                 href={session ? "/account" : "/auth/signin"}
-                className="hidden sm:block p-2 -m-2 text-[#1D1D1F] hover:text-[#6E6E73] transition-colors"
+                className="hidden sm:block p-2 -m-2 rounded-lg text-[#1D1D1F] hover:text-[#6E6E73] hover:bg-[#F5F5F7] transition-colors"
                 aria-label={session ? "Account" : "Sign in"}
               >
                 <User className="w-5 h-5" />
@@ -85,7 +85,7 @@ export function Navbar() {
               {/* Mobile menu toggle */}
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className="md:hidden p-2 -m-2 text-[#1D1D1F]"
+                className="md:hidden p-2 -m-2 rounded-lg text-[#1D1D1F] hover:bg-[#F5F5F7] transition-colors"
                 aria-label={mobileOpen ? "Close menu" : "Open menu"}
               >
                 {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}

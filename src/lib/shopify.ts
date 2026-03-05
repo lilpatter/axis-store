@@ -99,6 +99,13 @@ export async function fetchShopifyProducts(): Promise<Product[] | null> {
 }
 
 export async function getProducts(): Promise<Product[]> {
+  const hasSupabase =
+    process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (hasSupabase) {
+    const { getProductsFromDb } = await import("@/lib/products/db");
+    const dbProducts = await getProductsFromDb();
+    if (dbProducts.length > 0) return dbProducts;
+  }
   const shopify = await fetchShopifyProducts();
   if (shopify?.length) return shopify;
   const { products } = await import("@/lib/data/products");
@@ -116,6 +123,13 @@ export async function getRelatedProducts(
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
+  const hasSupabase =
+    process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (hasSupabase) {
+    const { getProductBySlugFromDb } = await import("@/lib/products/db");
+    const db = await getProductBySlugFromDb(slug);
+    if (db) return db;
+  }
   if (!SHOPIFY_STORE || !SHOPIFY_TOKEN) {
     const { getProductBySlug: getStatic } = await import("@/lib/data/products");
     return getStatic(slug) ?? null;

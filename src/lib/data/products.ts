@@ -1,6 +1,10 @@
 import type { Product } from "@/types";
+import { resolveImageUrl } from "@/lib/products/config";
 
-// TODO: Replace static product data with Shopify Storefront API or custom CMS
+/**
+ * Static product catalog. Replace with Shopify (set SHOPIFY_* env) or your CMS.
+ * For real items: add images as full URLs or set NEXT_PUBLIC_PRODUCT_IMAGES_BASE.
+ */
 
 const categories = [
   "Clothing",
@@ -10,6 +14,43 @@ const categories = [
   "Tech Accessories",
   "Home",
 ] as const;
+
+/** Curated product-style images. Swap for your CDN URLs when adding real items. */
+const IMAGE_BY_CATEGORY: Record<string, string[]> = {
+  clothing: [
+    "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80",
+    "https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=800&q=80",
+    "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=800&q=80",
+  ],
+  shoes: [
+    "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80",
+    "https://images.unsplash.com/photo-1460353581641-37baddab0fa2?w=800&q=80",
+  ],
+  jewellery: [
+    "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800&q=80",
+    "https://images.unsplash.com/photo-1611652022419-a9419f74343c?w=800&q=80",
+  ],
+  accessories: [
+    "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&q=80",
+    "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=800&q=80",
+  ],
+  techaccessories: [
+    "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80",
+    "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=800&q=80",
+  ],
+  home: [
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
+    "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&q=80",
+  ],
+};
+
+let imageIndex = 0;
+function getCategoryImage(category: string): string {
+  const key = category?.toLowerCase().replace(/\s/g, "") ?? "clothing";
+  const arr = IMAGE_BY_CATEGORY[key] ?? IMAGE_BY_CATEGORY.clothing;
+  const img = Array.isArray(arr) ? arr[imageIndex++ % arr.length] : arr;
+  return typeof img === "string" ? img : IMAGE_BY_CATEGORY.clothing[0];
+}
 
 function makeProduct(
   overrides: Partial<Product> & Pick<Product, "name" | "price" | "category">
@@ -21,10 +62,13 @@ function makeProduct(
       .replace(/[^\w\s-]/g, "")
       .replace(/\s+/g, "-");
   const id = overrides.id ?? slug;
-  const img = (seed: string) =>
-    `https://picsum.photos/seed/${encodeURIComponent(seed)}/800/1000`;
+  const defaultImg = getCategoryImage(overrides.category ?? "");
+  const images = overrides.images?.length
+    ? overrides.images.map((u) => resolveImageUrl(u))
+    : [resolveImageUrl(defaultImg)];
   return {
     id,
+    sku: overrides.sku,
     name: overrides.name,
     slug: overrides.slug ?? slug,
     price: overrides.price,
@@ -33,8 +77,8 @@ function makeProduct(
     subCategory: overrides.subCategory,
     description:
       overrides.description ??
-      `Premium ${overrides.name.toLowerCase()}. Crafted with care for everyday elegance.`,
-    images: overrides.images ?? [img(id)],
+      `${overrides.name}. Quality materials and craftsmanship.`,
+    images,
     sizes: overrides.sizes,
     colors: overrides.colors,
     badge: overrides.badge,
@@ -43,6 +87,8 @@ function makeProduct(
     reviewCount: overrides.reviewCount ?? 24,
     tags: overrides.tags ?? [overrides.category.toLowerCase()],
     createdAt: overrides.createdAt ?? new Date().toISOString(),
+    brand: overrides.brand,
+    metadata: overrides.metadata,
   };
 }
 

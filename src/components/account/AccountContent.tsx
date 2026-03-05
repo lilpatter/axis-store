@@ -5,6 +5,7 @@ import Link from "next/link";
 import { signOut } from "next-auth/react";
 import type { Session } from "next-auth";
 import { Button } from "@/components/ui/Button";
+import { Package, Truck, CheckCircle, CreditCard } from "lucide-react";
 
 interface OrderItem {
   name: string;
@@ -19,10 +20,33 @@ interface Order {
   items: OrderItem[];
   total: number;
   created_at: string;
+  order_status?: string | null;
+  tracking_number?: string | null;
+  details?: Record<string, unknown>;
 }
 
 interface AccountContentProps {
   session: Session;
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const s = (status ?? "paid").toLowerCase();
+  const styles =
+    s === "delivered"
+      ? "bg-green-100 text-green-800"
+      : s === "shipped"
+        ? "bg-blue-100 text-blue-800"
+        : "bg-zinc-100 text-zinc-700";
+  const label = s === "delivered" ? "Delivered" : s === "shipped" ? "Shipped" : "Paid";
+  const Icon = s === "delivered" ? CheckCircle : s === "shipped" ? Truck : CreditCard;
+  return (
+    <span
+      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${styles}`}
+    >
+      <Icon className="w-3.5 h-3.5" />
+      {label}
+    </span>
+  );
 }
 
 export function AccountContent({ session }: AccountContentProps) {
@@ -66,35 +90,45 @@ export function AccountContent({ session }: AccountContentProps) {
             {orders.map((order) => (
               <li
                 key={order.id}
-                className="border-b border-[#e5e5e7] pb-4 last:border-0 last:pb-0"
+                className="border border-[#e5e5e7] rounded-lg overflow-hidden bg-white hover:shadow-md transition-shadow"
               >
                 <Link
                   href={`/account/orders/${order.id}`}
-                  className="block hover:bg-[#ebebed] -mx-2 px-2 py-1 rounded-lg transition-colors"
+                  className="block p-4"
                 >
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-[#6E6E73]">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <div className="flex items-center gap-2 flex-wrap">
                       {order.order_number && (
-                        <span className="font-medium text-[#1D1D1F] mr-2">
+                        <span className="font-semibold text-[#1D1D1F]">
                           {order.order_number}
                         </span>
                       )}
-                      {new Date(order.created_at).toLocaleDateString("en-US", {
-                        dateStyle: "medium",
-                      })}
-                    </span>
-                    <span className="font-medium">
+                      <StatusBadge status={order.order_status ?? "paid"} />
+                      {order.tracking_number && (
+                        <span className="text-xs text-[#6E6E73] flex items-center gap-1">
+                          <Package className="w-3.5 h-3.5" />
+                          {order.tracking_number}
+                        </span>
+                      )}
+                    </div>
+                    <span className="font-medium text-[#1D1D1F]">
                       ${(order.total / 100).toFixed(2)}
                     </span>
                   </div>
-                  <ul className="text-[15px] text-[#1D1D1F]">
+                  <div className="text-sm text-[#6E6E73] mb-2">
+                    {new Date(order.created_at).toLocaleDateString("en-US", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
+                  </div>
+                  <ul className="text-[15px] text-[#1D1D1F] space-y-0.5">
                     {order.items.map((item, i) => (
                       <li key={i}>
                         {item.name} × {item.quantity}
                       </li>
                     ))}
                   </ul>
-                  <p className="text-xs text-[#6E6E73] mt-2">
+                  <p className="text-sm text-[#6E6E73] mt-3 font-medium">
                     View details →
                   </p>
                 </Link>

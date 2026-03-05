@@ -2,11 +2,37 @@ import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import Stripe from "stripe";
 import type { CartItem } from "@/types";
+import { getProducts } from "@/lib/shopify";
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) return null;
   return new Stripe(key);
+}
+
+/** Validate cart prices against server-side product catalog. Rejects price manipulation. */
+function validateCartPrices(
+  items: CartItem[],
+  productMap: Map<string, { price: number; name: string }>
+): { valid: boolean; error?: string } {
+  for (const item of items) {
+    const product = productMap.get(item.productId) ?? productMap.get(item.slug);
+    if (!product) {
+      return { valid: false, error: `Product not found: ${item.name}` };
+    }
+    const expectedPrice = Math.round(product.price * 100) / 100;
+    const actualPrice = Math.round(item.price * 100) / 100;
+    if (actualPrice !== expectedPrice) {
+      return {
+        valid: false,
+        error: `Invalid price for ${product.name}: expected $${expectedPrice}, got $${actualPrice}`,
+      };
+    }
+    if (item.quantity < 1 || item.quantity > 99) {
+      return { valid: false, error: `Invalid quantity for ${item.name}` };
+    }
+  }
+  return { valid: true };
 }
 
 export async function POST(request: NextRequest) {
@@ -34,6 +60,22 @@ export async function POST(request: NextRequest) {
     if (!items?.length) {
       return NextResponse.json(
         { error: "Cart is empty" },
+        { status: 400 }
+      );
+    }
+
+    // Server-side price validation: prevent cart price manipulation
+    const products = await getProducts();
+    const productMap = new Map(
+      products.map((p) => [p.id, { price: p.price, name: p.name }])
+    );
+    products.forEach((p) => {
+      if (!productMap.has(p.slug)) productMap.set(p.slug, { price: p.price, name: p.name });
+    });
+    const validation = validateCartPrices(items, productMap);
+    if (!validation.valid) {
+      return NextResponse.json(
+        { error: validation.error ?? "Invalid cart" },
         { status: 400 }
       );
     }

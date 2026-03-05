@@ -10,12 +10,14 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const base =
-  "inline-flex items-center justify-center font-medium transition-all duration-200 ease-out rounded-full";
+  "inline-flex items-center justify-center font-medium transition-all duration-200 ease-out rounded-full cursor-pointer";
 const variants = {
   primary:
-    "bg-black text-white hover:bg-[#1D1D1F] active:scale-[0.98] shadow-[0_2px_8px_rgba(0,0,0,0.06)]",
-  secondary: "border border-[#1D1D1F] text-[#1D1D1F] hover:bg-[#F5F5F7]",
-  ghost: "text-[#6E6E73] hover:bg-[#F5F5F7] hover:text-[#1D1D1F]",
+    "bg-black text-white hover:bg-[#333] hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] shadow-[0_2px_8px_rgba(0,0,0,0.06)]",
+  secondary:
+    "border border-[#1D1D1F] text-[#1D1D1F] hover:bg-[#1D1D1F] hover:text-white hover:border-[#1D1D1F] active:scale-[0.98]",
+  ghost:
+    "text-[#6E6E73] hover:bg-[#e5e5e7] hover:text-[#1D1D1F] active:scale-[0.98]",
 };
 const sizes = {
   sm: "h-9 px-4 text-sm",

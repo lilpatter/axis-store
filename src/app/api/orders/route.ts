@@ -20,7 +20,7 @@ export async function GET() {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
       .from("orders")
-      .select("id, order_number, stripe_session_id, items, total, created_at")
+      .select("id, order_number, stripe_session_id, items, total, created_at, order_status, tracking_number, details")
       .eq("email", session.user.email)
       .order("created_at", { ascending: false });
 

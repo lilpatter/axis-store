@@ -65,8 +65,8 @@ export function ProductCard({ product, className }: ProductCardProps) {
             "absolute top-3 right-3 w-10 h-10 rounded-full",
             "bg-white text-black shadow-[0_2px_8px_rgba(0,0,0,0.06)]",
             "flex items-center justify-center",
-            "opacity-0 group-hover:opacity-100 transition-opacity duration-200",
-            "hover:bg-black hover:text-white"
+            "opacity-0 group-hover:opacity-100 transition-all duration-200",
+            "hover:bg-black hover:text-white hover:scale-110"
           )}
           aria-label={`Add ${product.name} to cart`}
         >

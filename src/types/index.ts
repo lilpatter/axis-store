@@ -1,5 +1,6 @@
 export interface Product {
   id: string;
+  sku?: string;
   name: string;
   slug: string;
   price: number;
@@ -16,6 +17,9 @@ export interface Product {
   reviewCount: number;
   tags: string[];
   createdAt: string;
+  /** For real products: brand, weight, materials, etc. */
+  brand?: string;
+  metadata?: Record<string, string>;
 }
 
 export interface CartItem {

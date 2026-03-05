@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { useCartStore } from "@/store/cartStore";
 import { Button } from "@/components/ui/Button";
 import { CheckoutButton } from "./CheckoutButton";
+import { OrderSuccess } from "./OrderSuccess";
 import { formatPrice } from "@/lib/utils";
 import { ShoppingBag, Minus, Plus, Trash2 } from "lucide-react";
 
@@ -22,23 +23,9 @@ export function CartContent() {
   }, [success, clearCart]);
 
   if (items.length === 0) {
+    if (success) return <OrderSuccess />;
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        {success && (
-          <div className="mb-4 space-y-2">
-            <p className="text-green-600 font-medium">
-              Payment successful! Thank you for your order.
-            </p>
-            <p className="text-sm text-[#6E6E73]">
-              <Link
-                href="/account"
-                className="underline hover:text-[#1D1D1F]"
-              >
-                View your orders
-              </Link>
-            </p>
-          </div>
-        )}
         {canceled && (
           <p className="text-[#6E6E73] mb-4">
             Checkout was canceled. Your cart is still here when you&apos;re ready.
@@ -87,7 +74,7 @@ export function CartContent() {
               )}
               <p className="mt-2 font-medium">{formatPrice(item.price)}</p>
               <div className="mt-4 flex items-center gap-4">
-                <div className="flex items-center border border-[#e5e5e7] rounded-lg">
+                <div className="flex items-center border border-[#e5e5e7] rounded-lg overflow-hidden">
                   <button
                     onClick={() =>
                       updateQuantity(
@@ -96,7 +83,7 @@ export function CartContent() {
                         item.variant
                       )
                     }
-                    className="w-10 h-10 flex items-center justify-center text-[#6E6E73] hover:text-[#1D1D1F]"
+                    className="w-10 h-10 flex items-center justify-center text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] transition-colors"
                   >
                     <Minus className="w-4 h-4" />
                   </button>
@@ -111,14 +98,14 @@ export function CartContent() {
                         item.variant
                       )
                     }
-                    className="w-10 h-10 flex items-center justify-center text-[#6E6E73] hover:text-[#1D1D1F]"
+                    className="w-10 h-10 flex items-center justify-center text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] transition-colors"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
                 <button
                   onClick={() => removeItem(item.productId, item.variant)}
-                  className="flex items-center gap-1 text-sm text-[#6E6E73] hover:text-red-600"
+                  className="flex items-center gap-1 text-sm text-[#6E6E73] hover:text-red-600 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                   Remove

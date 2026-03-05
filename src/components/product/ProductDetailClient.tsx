@@ -68,10 +68,10 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               <button
                 key={s}
                 onClick={() => setSelectedSize(s)}
-                className={`w-12 h-10 rounded-lg border text-sm font-medium transition-colors ${
+                className={`w-12 h-10 rounded-lg border text-sm font-medium transition-all hover:scale-105 ${
                   selectedSize === s
                     ? "border-black bg-black text-white"
-                    : "border-[#e5e5e7] hover:border-[#6E6E73]"
+                    : "border-[#e5e5e7] hover:border-[#6E6E73] hover:bg-[#F5F5F7]"
                 }`}
               >
                 {s}
@@ -89,10 +89,10 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               <button
                 key={c}
                 onClick={() => setSelectedColor(c)}
-                className={`px-4 h-10 rounded-lg border text-sm font-medium transition-colors ${
+                className={`px-4 h-10 rounded-lg border text-sm font-medium transition-all hover:scale-105 ${
                   selectedColor === c
                     ? "border-black bg-black text-white"
-                    : "border-[#e5e5e7] hover:border-[#6E6E73]"
+                    : "border-[#e5e5e7] hover:border-[#6E6E73] hover:bg-[#F5F5F7]"
                 }`}
               >
                 {c}
@@ -107,14 +107,14 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-            className="w-10 h-10 rounded-lg border border-[#e5e5e7] flex items-center justify-center text-lg"
+            className="w-10 h-10 rounded-lg border border-[#e5e5e7] flex items-center justify-center text-lg hover:bg-[#F5F5F7] hover:border-[#6E6E73] transition-colors"
           >
             −
           </button>
           <span className="w-12 text-center font-medium">{quantity}</span>
           <button
             onClick={() => setQuantity((q) => q + 1)}
-            className="w-10 h-10 rounded-lg border border-[#e5e5e7] flex items-center justify-center text-lg"
+            className="w-10 h-10 rounded-lg border border-[#e5e5e7] flex items-center justify-center text-lg hover:bg-[#F5F5F7] hover:border-[#6E6E73] transition-colors"
           >
             +
           </button>

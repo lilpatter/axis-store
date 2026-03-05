@@ -38,6 +38,12 @@ export default async function AdminLayout({
                   Overview
                 </Link>
                 <Link
+                  href="/admin/products"
+                  className="text-[#6E6E73] hover:text-[#1D1D1F]"
+                >
+                  Products
+                </Link>
+                <Link
                   href="/admin/orders"
                   className="text-[#6E6E73] hover:text-[#1D1D1F]"
                 >
