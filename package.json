@@ -9,12 +9,14 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@sparticuz/chromium": "^143.0.4",
     "@supabase/supabase-js": "^2.98.0",
     "dompurify": "^3.3.2",
     "fuse.js": "^7.1.0",
     "lucide-react": "^0.577.0",
     "next": "16.1.6",
     "next-auth": "^4.24.13",
+    "puppeteer-core": "^24.38.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "stripe": "^20.4.0",

@@ -254,7 +254,10 @@ export default async function OrderDetailPage({
         </section>
 
         {/* Package tracking */}
-        <OrderTracking trackingNumber={order.tracking_number} />
+        <OrderTracking
+          trackingNumber={order.tracking_number}
+          orderId={order.id}
+        />
       </div>
     </div>
   );
