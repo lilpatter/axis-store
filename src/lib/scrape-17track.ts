@@ -76,18 +76,23 @@ export async function scrape17Track(
     );
 
     const url = `https://t.17track.net/en#nums=${encodeURIComponent(trackingNumber.trim())}`;
-    // Use domcontentloaded for speed; 17track is SPA, content loads async
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45000 });
 
-    // Wait for tracking block (status only; timeline deferred)
+    // Wait until the real tracking result loads (not "please wait")
+    // The status row: <div class="flex items-center gap-1 text-xl font-semibold"><h3>Delivered</h3>...Time of delivery:...</div>
     await page
-      .waitForSelector("#yq-tracking-progress h3, #yq-tracking-progress", {
-        timeout: 35000,
-      })
+      .waitForFunction(
+        () => {
+          const block = document.getElementById("yq-tracking-progress");
+          if (!block) return false;
+          const text = block.innerText;
+          return text.includes("Time of delivery") || /\b(Delivered|In transit|Out for delivery|Expired|Exception|Pick up|Failed)\b/i.test(text);
+        },
+        { timeout: 40000 }
+      )
       .catch(() => {});
 
-    // Brief wait for status text to render
-    await new Promise((r) => setTimeout(r, 2000));
+    await new Promise((r) => setTimeout(r, 3000));
 
     const extracted = await page.evaluate(() => {
       const result: {
@@ -96,12 +101,19 @@ export async function scrape17Track(
       } = { status: "", deliveryTime: null };
 
       const trackingBlock = document.getElementById("yq-tracking-progress");
-      const statusH3 = trackingBlock?.querySelector("h3");
-      if (statusH3?.textContent?.trim()) {
-        result.status = statusH3.textContent.trim();
+      // Status row: <div class="flex..."><h3>Delivered</h3>...Time of delivery:...</div>
+      const allDivs = trackingBlock?.querySelectorAll("div") ?? [];
+      for (const div of Array.from(allDivs)) {
+        if (div.innerText.includes("Time of delivery") && div.querySelector("h3")) {
+          const h3 = div.querySelector("h3");
+          if (h3?.textContent?.trim()) {
+            result.status = h3.textContent.trim();
+            break;
+          }
+        }
       }
-      if (!result.status && trackingBlock) {
-        const h3 = trackingBlock.querySelector("h3");
+      if (!result.status) {
+        const h3 = trackingBlock?.querySelector("h3");
         if (h3?.textContent?.trim()) result.status = h3.textContent.trim();
       }
       if (!result.status) {
