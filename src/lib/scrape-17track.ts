@@ -80,7 +80,7 @@ export async function scrape17Track(
 
     // Wait for tracking content to appear; if timeout, we'll still try to extract
     await page
-      .waitForSelector("h3, [class*='status'], [class*='yq-'], .el-empty, [class*='empty'], main, [class*='track']", {
+      .waitForSelector("#yq-tracking-progress, h3, .yq-time", {
         timeout: 20000,
       })
       .catch(() => {
@@ -97,24 +97,29 @@ export async function scrape17Track(
         events: Array<{ time?: string; description?: string; location?: string }>;
       } = { status: "", deliveryTime: null, events: [] };
 
-      // Status: look for h3 or prominent status text
-      const h3 = document.querySelector("h3");
-      if (h3?.textContent?.trim()) {
-        result.status = h3.textContent.trim();
+      // Status: use #yq-tracking-progress h3 (the actual tracking status, not nav/header)
+      const trackingBlock = document.getElementById("yq-tracking-progress");
+      const statusH3 = trackingBlock?.querySelector("h3");
+      if (statusH3?.textContent?.trim()) {
+        result.status = statusH3.textContent.trim();
       }
-      const statusEl = document.querySelector("[class*='status']");
-      if (!result.status && statusEl?.textContent?.trim()) {
-        result.status = statusEl.textContent.trim();
+      if (!result.status) {
+        const h3 = document.querySelector("h3");
+        if (h3?.textContent?.trim()) result.status = h3.textContent.trim();
+      }
+      if (!result.status) {
+        const statusEl = document.querySelector("[class*='status']");
+        if (statusEl?.textContent?.trim()) result.status = statusEl.textContent.trim();
       }
 
-      // Delivery time: "Time of delivery: YYYY-MM-DD HH:mm" or similar
-      const body = document.body.innerText;
-      const deliveryMatch = body.match(/time of delivery:?\s*([^\n]+)/i);
+      // Delivery time: "Time of delivery: YYYY-MM-DD" in the tracking block
+      const blockText = trackingBlock?.innerText ?? document.body.innerText;
+      const deliveryMatch = blockText.match(/time of delivery:?\s*([^\n]+)/i);
       if (deliveryMatch?.[1]) {
         result.deliveryTime = deliveryMatch[1].trim();
       }
 
-      // Timeline: .yq-time with sibling description
+      // Timeline: .yq-time with sibling description (from all carrier sections)
       const timeSpans = document.querySelectorAll(".yq-time");
       timeSpans.forEach((span) => {
         const time = span.textContent?.trim();
