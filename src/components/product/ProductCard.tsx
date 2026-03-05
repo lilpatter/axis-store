@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import type { Product } from "@/types";
-import { formatPrice } from "@/lib/utils";
+import { Price } from "@/components/ui/Price";
 import { useCartStore } from "@/store/cartStore";
 import { cn } from "@/lib/utils";
 
@@ -82,11 +82,11 @@ export function ProductCard({ product, className }: ProductCardProps) {
         </h3>
         <div className="mt-1 flex items-center gap-2">
           <span className="text-[15px] font-medium text-[#1D1D1F]">
-            {formatPrice(product.price)}
+            <Price value={product.price} />
           </span>
           {product.originalPrice && (
             <span className="text-sm text-[#6E6E73] line-through">
-              {formatPrice(product.originalPrice)}
+              <Price value={product.originalPrice} />
             </span>
           )}
         </div>

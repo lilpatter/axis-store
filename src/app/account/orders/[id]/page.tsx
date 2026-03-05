@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { OrderTracking } from "@/components/tracking/OrderTracking";
+import { Price } from "@/components/ui/Price";
 
 interface OrderItem {
   name: string;
@@ -171,7 +172,7 @@ export default async function OrderDetailPage({
             <div className="flex justify-between">
               <dt className="text-[#6E6E73]">Total</dt>
               <dd className="font-medium">
-                ${((order.total ?? 0) / 100).toFixed(2)}
+                <Price value={order.total ?? 0} fromCents />
               </dd>
             </div>
           </dl>
@@ -192,7 +193,7 @@ export default async function OrderDetailPage({
                   {item.name} × {item.quantity}
                 </span>
                 <span className="text-[#6E6E73]">
-                  ${((item.amount_total ?? 0) / 100).toFixed(2)}
+                  <Price value={item.amount_total ?? 0} fromCents />
                 </span>
               </li>
             ))}

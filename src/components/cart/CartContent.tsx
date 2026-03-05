@@ -8,7 +8,7 @@ import { useCartStore } from "@/store/cartStore";
 import { Button } from "@/components/ui/Button";
 import { CheckoutButton } from "./CheckoutButton";
 import { OrderSuccess } from "./OrderSuccess";
-import { formatPrice } from "@/lib/utils";
+import { Price } from "@/components/ui/Price";
 import { ShoppingBag, Minus, Plus, Trash2 } from "lucide-react";
 
 export function CartContent() {
@@ -72,7 +72,7 @@ export function CartContent() {
               {item.variant && (
                 <p className="text-sm text-[#6E6E73] mt-0.5">{item.variant}</p>
               )}
-              <p className="mt-2 font-medium">{formatPrice(item.price)}</p>
+              <p className="mt-2 font-medium"><Price value={item.price} /></p>
               <div className="mt-4 flex items-center gap-4">
                 <div className="flex items-center border border-[#e5e5e7] rounded-lg overflow-hidden">
                   <button
@@ -124,7 +124,7 @@ export function CartContent() {
           <div className="space-y-2 text-[15px]">
             <div className="flex justify-between">
               <span className="text-[#6E6E73]">Subtotal</span>
-              <span>{formatPrice(totalPrice)}</span>
+              <span><Price value={totalPrice} /></span>
             </div>
             <div className="flex justify-between">
               <span className="text-[#6E6E73]">Shipping</span>
@@ -132,7 +132,7 @@ export function CartContent() {
             </div>
             <div className="flex justify-between pt-4 border-t border-[#e5e5e7] font-medium text-lg">
               <span>Total</span>
-              <span>{formatPrice(totalPrice)}</span>
+              <span><Price value={totalPrice} /></span>
             </div>
           </div>
           <CheckoutButton />

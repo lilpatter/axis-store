@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Fuse from "fuse.js";
 import DOMPurify from "dompurify";
 import { Search, X } from "lucide-react";
-import { formatPrice } from "@/lib/utils";
+import { Price } from "@/components/ui/Price";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types";
@@ -133,7 +133,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
                             {product.name}
                           </p>
                           <p className="text-sm text-[#6E6E73]">
-                            {product.category} · {formatPrice(product.price)}
+                            {product.category} · <Price value={product.price} />
                           </p>
                         </div>
                       </Link>

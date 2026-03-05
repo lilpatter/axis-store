@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Heart } from "lucide-react";
 import type { Product } from "@/types";
-import { formatPrice } from "@/lib/utils";
+import { Price } from "@/components/ui/Price";
 import { useCartStore } from "@/store/cartStore";
 import { Button } from "@/components/ui/Button";
 
@@ -48,11 +48,11 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
       </h1>
       <div className="mt-4 flex items-center gap-2">
         <span className="text-xl font-medium text-[#1D1D1F]">
-          {formatPrice(product.price)}
+          <Price value={product.price} />
         </span>
         {product.originalPrice && (
           <span className="text-[#6E6E73] line-through">
-            {formatPrice(product.originalPrice)}
+            <Price value={product.originalPrice} />
           </span>
         )}
       </div>

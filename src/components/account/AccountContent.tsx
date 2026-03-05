@@ -5,6 +5,7 @@ import Link from "next/link";
 import { signOut } from "next-auth/react";
 import type { Session } from "next-auth";
 import { Button } from "@/components/ui/Button";
+import { Price } from "@/components/ui/Price";
 import { Package, Truck, CheckCircle, CreditCard } from "lucide-react";
 
 interface OrderItem {
@@ -112,7 +113,7 @@ export function AccountContent({ session }: AccountContentProps) {
                       )}
                     </div>
                     <span className="font-medium text-[#1D1D1F]">
-                      ${(order.total / 100).toFixed(2)}
+                      <Price value={order.total} fromCents />
                     </span>
                   </div>
                   <div className="text-sm text-[#6E6E73] mb-2">

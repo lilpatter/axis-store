@@ -5,7 +5,6 @@ import {
   getProductBySlug,
   getRelatedProducts,
 } from "@/lib/shopify";
-import { formatPrice } from "@/lib/utils";
 import { ProductDetailClient } from "@/components/product/ProductDetailClient";
 import { ProductGrid } from "@/components/product/ProductGrid";
 
