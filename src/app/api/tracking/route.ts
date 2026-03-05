@@ -204,7 +204,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: "Tracking failed",
-        message: process.env.NODE_ENV === "development" ? message : undefined,
+        message, // Include to help debug; remove when using TRACK17_API_KEY
       },
       { status: 500 }
     );
