@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { products, categoriesList } from "@/lib/data/products";
 import { slugify } from "@/lib/utils";
+import type { Product } from "@/types";
 
 const categorySlugs: Record<string, string> = {
   Clothing: "clothing",
@@ -11,13 +11,22 @@ const categorySlugs: Record<string, string> = {
   Home: "home",
 };
 
-export function FeaturedCategories() {
-  const categories = categoriesList.map((name) => {
+interface FeaturedCategoriesProps {
+  products: Product[];
+  categories: readonly string[] | string[];
+}
+
+export function FeaturedCategories({
+  products,
+  categories,
+}: FeaturedCategoriesProps) {
+  const items = categories.map((name) => {
     const slug = categorySlugs[name] ?? slugify(name);
-    const count = products.filter((p) => p.category === name).length;
     const firstProduct = products.find((p) => p.category === name);
-    const image = firstProduct?.images[0] ?? `https://picsum.photos/seed/cat-${encodeURIComponent(name)}/400/400`;
-    return { name, slug, count, image };
+    const image =
+      firstProduct?.images[0] ??
+      `https://picsum.photos/seed/cat-${encodeURIComponent(name)}/400/400`;
+    return { name, slug, image };
   });
 
   return (
@@ -30,7 +39,7 @@ export function FeaturedCategories() {
           Shop by Category
         </h2>
         <div className="flex gap-4 overflow-x-auto pb-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:overflow-visible scrollbar-hide">
-          {categories.map((cat, i) => (
+          {items.map((cat, i) => (
             <Link
               key={cat.slug}
               href={`/shop/${cat.slug}`}

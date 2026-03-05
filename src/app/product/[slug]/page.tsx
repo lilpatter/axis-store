@@ -4,7 +4,7 @@ import Link from "next/link";
 import {
   getProductBySlug,
   getRelatedProducts,
-} from "@/lib/data/products";
+} from "@/lib/shopify";
 import { formatPrice } from "@/lib/utils";
 import { ProductDetailClient } from "@/components/product/ProductDetailClient";
 import { ProductGrid } from "@/components/product/ProductGrid";
@@ -15,13 +15,13 @@ interface PageProps {
 
 export default async function ProductPage({ params }: PageProps) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlug(slug);
 
   if (!product) {
     notFound();
   }
 
-  const related = getRelatedProducts(product);
+  const related = await getRelatedProducts(product);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">

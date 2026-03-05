@@ -1,7 +1,8 @@
-import { products } from "@/lib/data/products";
+import { getProducts } from "@/lib/shopify";
 import { ShopContent } from "@/components/shop/ShopContent";
 
-export default function ShopPage() {
+export default async function ShopPage() {
+  const products = await getProducts();
   return (
     <div>
       <header className="border-b border-[#e5e5e7] bg-white">

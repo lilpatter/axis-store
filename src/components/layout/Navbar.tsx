@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Search, ShoppingBag, User, Menu, X } from "lucide-react";
+import { signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { Search, ShoppingBag, User, Menu, X, LogOut } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { SearchModal } from "@/components/search/SearchModal";
 import { cn } from "@/lib/utils";
@@ -16,6 +18,7 @@ const navLinks = [
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const { data: session, status } = useSession();
   const totalItems = useCartStore((s) => s.totalItems);
 
   return (
@@ -72,9 +75,9 @@ export function Navbar() {
                 )}
               </Link>
               <Link
-                href="/account"
+                href={session ? "/account" : "/auth/signin"}
                 className="hidden sm:block p-2 -m-2 text-[#1D1D1F] hover:text-[#6E6E73] transition-colors"
-                aria-label="Account"
+                aria-label={session ? "Account" : "Sign in"}
               >
                 <User className="w-5 h-5" />
               </Link>
@@ -105,12 +108,24 @@ export function Navbar() {
                   </Link>
                 ))}
                 <Link
-                  href="/account"
+                  href={session ? "/account" : "/auth/signin"}
                   onClick={() => setMobileOpen(false)}
                   className="text-[15px] text-[#1D1D1F]"
                 >
-                  Account
+                  {session ? "Account" : "Sign in"}
                 </Link>
+                {session && (
+                  <button
+                    onClick={() => {
+                      setMobileOpen(false);
+                      signOut();
+                    }}
+                    className="flex items-center gap-2 text-[15px] text-[#6E6E73] hover:text-[#1D1D1F]"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign out
+                  </button>
+                )}
               </div>
             </nav>
           )}

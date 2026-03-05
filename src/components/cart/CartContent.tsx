@@ -1,19 +1,39 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { useCartStore } from "@/store/cartStore";
 import { Button } from "@/components/ui/Button";
+import { CheckoutButton } from "./CheckoutButton";
 import { formatPrice } from "@/lib/utils";
 import { ShoppingBag, Minus, Plus, Trash2 } from "lucide-react";
 
 export function CartContent() {
-  const { items, totalItems, totalPrice, updateQuantity, removeItem } =
+  const searchParams = useSearchParams();
+  const success = searchParams.get("success") === "true";
+  const canceled = searchParams.get("canceled") === "true";
+  const { items, totalItems, totalPrice, updateQuantity, removeItem, clearCart } =
     useCartStore();
+
+  useEffect(() => {
+    if (success) clearCart();
+  }, [success, clearCart]);
 
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
+        {success && (
+          <p className="text-green-600 font-medium mb-4">
+            Payment successful! Thank you for your order.
+          </p>
+        )}
+        {canceled && (
+          <p className="text-[#6E6E73] mb-4">
+            Checkout was canceled. Your cart is still here when you&apos;re ready.
+          </p>
+        )}
         <ShoppingBag className="w-16 h-16 text-[#6E6E73] mb-4" />
         <h2 className="text-xl font-medium text-[#1D1D1F] mb-2">
           Your bag is empty
@@ -118,14 +138,7 @@ export function CartContent() {
               <span>{formatPrice(totalPrice)}</span>
             </div>
           </div>
-          <Button
-            variant="primary"
-            size="lg"
-            className="w-full mt-6"
-            asChild
-          >
-            <Link href="#">Checkout</Link>
-          </Button>
+          <CheckoutButton />
         </div>
       </div>
     </div>

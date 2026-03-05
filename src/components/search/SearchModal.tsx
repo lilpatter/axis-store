@@ -5,17 +5,16 @@ import { useRouter } from "next/navigation";
 import Fuse from "fuse.js";
 import DOMPurify from "dompurify";
 import { Search, X } from "lucide-react";
-import { products } from "@/lib/data/products";
 import { formatPrice } from "@/lib/utils";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import type { Product } from "@/types";
 
 interface SearchModalProps {
   open: boolean;
   onClose: () => void;
 }
 
-// Debounce helper
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
   useEffect(() => {
@@ -25,29 +24,38 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-const fuse = new Fuse(products, {
-  keys: [
-    { name: "name", weight: 0.4 },
-    { name: "category", weight: 0.3 },
-    { name: "tags", weight: 0.2 },
-    { name: "description", weight: 0.1 },
-  ],
-  includeScore: true,
-  threshold: 0.4,
-});
-
 export function SearchModal({ open, onClose }: SearchModalProps) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
+  const [products, setProducts] = useState<Product[]>([]);
   const debouncedQuery = useDebounce(query, 300);
+
+  useEffect(() => {
+    if (open) fetch("/api/products").then((r) => r.json()).then(setProducts);
+  }, [open]);
+
+  const fuse = useMemo(
+    () =>
+      new Fuse(products, {
+        keys: [
+          { name: "name", weight: 0.4 },
+          { name: "category", weight: 0.3 },
+          { name: "tags", weight: 0.2 },
+          { name: "description", weight: 0.1 },
+        ],
+        includeScore: true,
+        threshold: 0.4,
+      }),
+    [products]
+  );
 
   const results = useMemo(() => {
     if (!debouncedQuery.trim()) return [];
     const sanitized = DOMPurify.sanitize(debouncedQuery, { ALLOWED_TAGS: [] });
     const found = fuse.search(sanitized);
     return found.slice(0, 8).map((r) => r.item);
-  }, [debouncedQuery]);
+  }, [debouncedQuery, fuse]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {

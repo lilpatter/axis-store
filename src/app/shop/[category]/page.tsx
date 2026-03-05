@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { products } from "@/lib/data/products";
+import { getProducts } from "@/lib/shopify";
 import { ShopContent } from "@/components/shop/ShopContent";
 
 const slugToCategory: Record<string, string> = {
@@ -23,6 +23,7 @@ export default async function CategoryPage({ params }: PageProps) {
     notFound();
   }
 
+  const products = await getProducts();
   const categoryProducts = products.filter((p) => p.category === categoryName);
 
   return (

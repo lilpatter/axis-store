@@ -1,7 +1,11 @@
-import { products } from "@/lib/data/products";
 import { ProductGrid } from "@/components/product/ProductGrid";
+import type { Product } from "@/types";
 
-export function FeaturedProducts() {
+interface FeaturedProductsProps {
+  products: Product[];
+}
+
+export function FeaturedProducts({ products }: FeaturedProductsProps) {
   const newArrivals = products.slice(0, 4);
 
   return (

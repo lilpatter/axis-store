@@ -1,9 +1,13 @@
-import { products } from "@/lib/data/products";
 import { ProductGrid } from "@/components/product/ProductGrid";
+import type { Product } from "@/types";
 
-export function TrendingSection() {
+interface TrendingSectionProps {
+  products: Product[];
+}
+
+export function TrendingSection({ products }: TrendingSectionProps) {
   const trending = products
-    .filter((p) => p.badge === "Bestseller" || p.rating >= 4.5)
+    .filter((p) => p.badge === "Bestseller" || (p.rating ?? 0) >= 4.5)
     .slice(0, 4);
 
   return (

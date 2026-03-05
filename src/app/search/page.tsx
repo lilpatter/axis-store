@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { getProducts } from "@/lib/shopify";
 import { SearchResults } from "./SearchResults";
 
 interface PageProps {
@@ -7,6 +8,7 @@ interface PageProps {
 
 export default async function SearchPage({ searchParams }: PageProps) {
   const { q } = await searchParams;
+  const products = await getProducts();
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -17,7 +19,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
         {q ? `Search: "${q}"` : "Search"}
       </h1>
       <Suspense fallback={<p className="text-[#6E6E73]">Loading...</p>}>
-        <SearchResults query={q ?? ""} />
+        <SearchResults query={q ?? ""} products={products} />
       </Suspense>
     </div>
   );

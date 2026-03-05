@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { CartContent } from "@/components/cart/CartContent";
 
 export default function CartPage() {
@@ -9,7 +10,9 @@ export default function CartPage() {
       >
         Your Bag
       </h1>
-      <CartContent />
+      <Suspense fallback={<div className="animate-pulse h-48 bg-[#F5F5F7] rounded-lg" />}>
+        <CartContent />
+      </Suspense>
     </div>
   );
 }
