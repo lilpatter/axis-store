@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { OrderTracking } from "@/components/tracking/OrderTracking";
 
 interface OrderItem {
   name: string;
@@ -37,6 +38,7 @@ interface Order {
   items: OrderItem[];
   total: number;
   details?: OrderDetails | null;
+  tracking_number?: string | null;
   created_at: string;
 }
 
@@ -243,6 +245,9 @@ export default async function OrderDetailPage({
             )}
           </dl>
         </section>
+
+        {/* Package tracking */}
+        <OrderTracking trackingNumber={order.tracking_number} />
       </div>
     </div>
   );
