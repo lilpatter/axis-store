@@ -5,43 +5,46 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Check, Sparkles } from "lucide-react";
 
-const COLORS = ["#1D1D1F", "#6E6E73", "#e5e5e7", "#a3a3a6"];
+const COLORS = [
+  "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7",
+  "#DDA0DD", "#98D8C8", "#F7DC6F", "#BB8FCE", "#85C1E9",
+];
 
 function runConfetti() {
-  const duration = 2000;
+  const duration = 2500;
   const end = Date.now() + duration;
 
   const style = document.createElement("style");
   style.textContent = `
     @keyframes axis-confetti {
-      0% { transform: translate(0,0) rotate(0deg); opacity: 1; }
-      100% { transform: translate(calc(var(--dx) * 1px), 400px) rotate(720deg); opacity: 0; }
+      0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(var(--drop)) translateX(var(--drift)) rotate(720deg); opacity: 0; }
     }
   `;
   document.head.appendChild(style);
-  setTimeout(() => style.remove(), duration + 1000);
+  setTimeout(() => style.remove(), duration + 1500);
 
   function burst() {
     const w = window.innerWidth;
-    const h = window.innerHeight * 0.5;
-    for (let i = 0; i < 6; i++) {
+    const dropHeight = window.innerHeight + 100;
+    for (let i = 0; i < 8; i++) {
       const el = document.createElement("div");
-      const size = 8 + Math.random() * 8;
+      const size = 8 + Math.random() * 10;
       const color = COLORS[Math.floor(Math.random() * COLORS.length)];
-      const x = w * (0.25 + Math.random() * 0.5);
-      const dx = (Math.random() - 0.5) * 150;
-      const delay = Math.random() * 0.25;
-      const durationMs = 1800 + Math.random() * 400;
+      const x = Math.random() * w;
+      const drift = (Math.random() - 0.5) * 200;
+      const delay = Math.random() * 0.3;
+      const durationMs = 2200 + Math.random() * 600;
       el.style.cssText = `
         position:fixed;pointer-events:none;width:${size}px;height:${size}px;
-        background:${color};left:${x}px;top:${h}px;border-radius:2px;
-        z-index:9999;--dx:${dx};
-        animation:axis-confetti ${durationMs}ms ease-out ${delay}s forwards;
+        background:${color};left:${x}px;top:-20px;border-radius:2px;
+        z-index:9999;--drop:${dropHeight}px;--drift:${drift}px;
+        animation:axis-confetti ${durationMs}ms ease-in ${delay}s forwards;
       `;
       document.body.appendChild(el);
       setTimeout(() => el.remove(), durationMs + delay * 1000);
     }
-    if (Date.now() < end) setTimeout(burst, 100);
+    if (Date.now() < end) setTimeout(burst, 80);
   }
   burst();
 }
