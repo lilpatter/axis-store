@@ -4,6 +4,10 @@ import { authOptions } from "@/lib/auth";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { scrape17Track } from "@/lib/scrape-17track";
 
+// Needed for scraping: Chromium + page load can take 30–60s
+export const maxDuration = 60;
+export const dynamic = "force-dynamic";
+
 /** 17track API response structures */
 interface TrackEvent {
   time_iso?: string;
@@ -195,9 +199,13 @@ export async function GET(request: NextRequest) {
       events: events.slice(0, 20),
     });
   } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
     console.error("Tracking API error:", err);
     return NextResponse.json(
-      { error: "Tracking failed" },
+      {
+        error: "Tracking failed",
+        message: process.env.NODE_ENV === "development" ? message : undefined,
+      },
       { status: 500 }
     );
   }

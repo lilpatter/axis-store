@@ -41,7 +41,7 @@ export function OrderTracking({ trackingNumber, orderId }: OrderTrackingProps) {
       .then((json) => {
         if (cancelled) return;
         if (json.error) {
-          setError(json.message ?? json.error);
+          setError(json.message || json.error);
           return;
         }
         setData(json);

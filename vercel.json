@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "src/app/api/tracking/route.ts": {
+      "memory": 3008
+    }
+  }
+}

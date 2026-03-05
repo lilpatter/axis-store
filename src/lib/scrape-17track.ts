@@ -1,3 +1,5 @@
+import { existsSync } from "fs";
+import { join } from "path";
 import chromium from "@sparticuz/chromium";
 import puppeteer from "puppeteer-core";
 
@@ -34,16 +36,20 @@ export async function scrape17Track(
   try {
     const isVercel = !!process.env.VERCEL;
     let executablePath: string;
-    if (isVercel) {
+    if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+      executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+    } else if (isVercel) {
       executablePath = await chromium.executablePath();
     } else if (process.platform === "win32") {
-      executablePath =
-        process.env.PUPPETEER_EXECUTABLE_PATH ||
-        "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+      const paths = [
+        join(process.env["ProgramFiles"] || "C:\\Program Files", "Google", "Chrome", "Application", "chrome.exe"),
+        join(process.env["ProgramFiles(x86)"] || "C:\\Program Files (x86)", "Google", "Chrome", "Application", "chrome.exe"),
+        "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+      ];
+      executablePath = paths.find((p) => existsSync(p)) || paths[0];
     } else if (process.platform === "darwin") {
-      executablePath =
-        process.env.PUPPETEER_EXECUTABLE_PATH ||
-        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+      executablePath = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
     } else {
       executablePath = await chromium.executablePath();
     }
@@ -62,13 +68,19 @@ export async function scrape17Track(
     );
 
     const url = `https://t.17track.net/en#nums=${encodeURIComponent(trackingNumber.trim())}`;
-    await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
+    await page.goto(url, { waitUntil: "load", timeout: 25000 });
 
-    // Wait for tracking content to appear (or "no data" state)
-    await page.waitForSelector(
-      "h3, [class*='status'], [class*='yq-'], .el-empty, [class*='empty']",
-      { timeout: 15000 }
-    );
+    // Wait for tracking content to appear; if timeout, we'll still try to extract
+    await page
+      .waitForSelector("h3, [class*='status'], [class*='yq-'], .el-empty, [class*='empty'], main, [class*='track']", {
+        timeout: 20000,
+      })
+      .catch(() => {
+        /* continue - page may still have content */
+      });
+
+    // Give dynamic content a moment to render
+    await new Promise((r) => setTimeout(r, 3000));
 
     const extracted = await page.evaluate(() => {
       const result: {
