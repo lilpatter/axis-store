@@ -44,21 +44,25 @@ async function getOrder(
   id: string,
   email: string
 ): Promise<Order | null> {
-  if (
-    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    !process.env.SUPABASE_SERVICE_ROLE_KEY
-  ) {
+  try {
+    if (
+      !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+      !process.env.SUPABASE_SERVICE_ROLE_KEY
+    ) {
+      return null;
+    }
+    const supabase = getSupabaseAdmin();
+    const { data, error } = await supabase
+      .from("orders")
+      .select("*")
+      .eq("id", id)
+      .eq("email", email)
+      .single();
+    if (error || !data) return null;
+    return data as Order;
+  } catch {
     return null;
   }
-  const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from("orders")
-    .select("*")
-    .eq("id", id)
-    .eq("email", email)
-    .single();
-  if (error || !data) return null;
-  return data as Order;
 }
 
 export default async function OrderDetailPage({
@@ -78,13 +82,41 @@ export default async function OrderDetailPage({
     notFound();
   }
 
-  const details = order.details ?? {};
-  const address = details.address;
-  const pm = details.payment_method;
+  let details: OrderDetails = {};
+  if (typeof order.details === "object" && order.details !== null) {
+    details = order.details;
+  } else if (typeof order.details === "string") {
+    try {
+      const parsed = JSON.parse(order.details);
+      details =
+        typeof parsed === "object" && parsed !== null ? parsed : {};
+    } catch {
+      details = {};
+    }
+  }
+  const address =
+    typeof details.address === "object" && details.address !== null
+      ? details.address
+      : null;
+  const pm =
+    typeof details.payment_method === "object" && details.payment_method !== null
+      ? details.payment_method
+      : null;
   const brandDisplay =
     pm?.brand && pm.brand !== "card"
       ? pm.brand.charAt(0).toUpperCase() + pm.brand.slice(1)
       : "Card";
+  let items: OrderItem[] = [];
+  if (Array.isArray(order.items)) {
+    items = order.items;
+  } else if (typeof order.items === "string") {
+    try {
+      const parsed = JSON.parse(order.items);
+      items = Array.isArray(parsed) ? parsed : [];
+    } catch {
+      items = [];
+    }
+  }
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -127,7 +159,7 @@ export default async function OrderDetailPage({
             <div className="flex justify-between">
               <dt className="text-[#6E6E73]">Total</dt>
               <dd className="font-medium">
-                ${(order.total / 100).toFixed(2)}
+                ${((order.total ?? 0) / 100).toFixed(2)}
               </dd>
             </div>
           </dl>
@@ -139,7 +171,7 @@ export default async function OrderDetailPage({
             Items
           </h2>
           <ul className="space-y-3">
-            {order.items.map((item, i) => (
+            {items.map((item, i) => (
               <li
                 key={i}
                 className="flex justify-between text-[15px] border-b border-[#e5e5e7] pb-3 last:border-0 last:pb-0"
@@ -163,10 +195,10 @@ export default async function OrderDetailPage({
             </h2>
             <p className="text-[15px] text-[#1D1D1F] whitespace-pre-line">
               {details.customer_name && `${details.customer_name}\n`}
-              {address.line1}
+              {address.line1 ?? ""}
               {address.line2 ? `\n${address.line2}` : ""}
-              {`\n${address.city}${address.state ? `, ${address.state}` : ""} ${address.postal_code}`}
-              {`\n${address.country}`}
+              {`\n${address.city ?? ""}${address.state ? `, ${address.state}` : ""} ${address.postal_code ?? ""}`}
+              {`\n${address.country ?? ""}`}
             </p>
           </section>
         )}
